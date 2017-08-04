@@ -2,29 +2,20 @@
 #define BOARD_HPP
 
 #include <vector>
+#include <bitset>
 
 class Board {
-  /*
-    3 states. 0, 1 and 2.
-    0 for empty, 
-    1 -> player 1 
-    2 -> player 2
-
-    So we need 2 bits for each cell. 
-    Support a maximum of 32x32 board by default.
-   */
-
-  Board(int rows, int colns, int k);
-  void place(int row, int col, int value);
-  int winner();  // determine the winner
+public:
+  bool place(int row, int col, int val);
+  void print();
+  int winner(); 
+  bool isFull();
   
 private:
-  int rows, colns, k;
-  std::vector<int> eachRow[2], eachCol[2],
-    eachDiag[2], eachAntiDiag[2];
-  std::vector<std::vector<int> > board;
-  
-  void initVectors();
+  std::bitset<19> rows[2][19], cols[2][19],
+    diag[2][37], antiDiag[2][37];
+
+  bool isWinning(std::bitset<19> house);
 };
 
 #endif
