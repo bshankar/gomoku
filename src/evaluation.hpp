@@ -5,8 +5,9 @@
 
 class Evaluation {
 public:
-  Evaluation(Board& board);
-  int compute();
+  double compute(Board board, int turn);
+  double center(Board& board, double eval, int turn);
+  double partials(Board& board, double eval, int turn);
 };
 
 #endif

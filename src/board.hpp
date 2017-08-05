@@ -11,7 +11,6 @@ public:
   int winner(); 
   bool isFull();
   
-private:
   std::bitset<19> rows[2][19], cols[2][19],
     diag[2][37], antiDiag[2][37];
 
