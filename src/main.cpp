@@ -22,10 +22,6 @@ void playHuman() {
     cout << "Put stone at: ";
     cin >> row >> col;
     cout << "\n";
-    cout << "Player " << turn << "s turn.\n";
-    cout << "Put stone at: ";
-    cin >> row >> col;
-    cout << "\n";
 
     if (row >= 0 && row < 19 &&
         col >= 0 && col < 19 &&
@@ -80,11 +76,27 @@ void playComputer(int depth) {
   cout << "Player " << board.winner() << " won!\n";  
 }
 
+void playItself(int depth) {
+  Board board;
+  Search search;
+  int turn = 0;
+  while (board.winner() == -1 && !board.isFull()) {
+      cout << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
+      board = search.pv[depth];
+      board.print();
+      turn ^= 1;
+  }
+  if (board.winner() != -1) {
+    cout << "Player " << board.winner() << " won\n";
+  } else
+    cout << "Game drawn!\n";
+}
+
 void test(int depth, int turn) {
   Board board;
   Search search;
   Evaluation eval;
-  board.place(0, 9, 0);
+  board.place(9, 9, 0);
   board.print();
   cout << eval.compute(board, turn) << "\n";
   cout << "Score: " << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
@@ -92,14 +104,21 @@ void test(int depth, int turn) {
 }
 
 int main(int argc, char* argv[]) {
-  // if (argc == 2) {
-    // if (string(argv[1]) == "-h")
-      // playHuman();
-    // else if (string(argv[1]) == "-c")
-      // playComputer(4);
-    // else
-      // printHelp();
-  // } else
-    // printHelp();
-  test(3, 1);
+  if (argc == 2) {
+    if (string(argv[1]) == "-h")
+      playHuman();
+    else
+      printHelp();
+  } else if (argc == 3) {
+    if (string(argv[1]) == "-c") {
+      playComputer(atoi(argv[2]));
+    }
+    else if (string(argv[1]) == "-t")
+      test(atoi(argv[2]), 1);
+    else if (string(argv[1]) == "-i")
+      playItself(atoi(argv[2]));
+    else
+      printHelp();
+  } else
+    printHelp();
 }

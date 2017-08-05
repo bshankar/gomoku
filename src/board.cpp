@@ -25,7 +25,7 @@ bool Board::place(int row, int col, int value) {
   houses[value][row] |= (1 << col);
   houses[value][19 + col] |= (1 << row); 
   houses[value][38 + row - col + 18] |= (1 << row);
-  houses[value][row + col] |= (1 << row);
+  houses[value][75 + row + col] |= (1 << row);
   return true;
 }
 
@@ -58,7 +58,7 @@ bool Board::isWinning(board_t house) {
 
 bool Board::isFull() {
   for (int r = 0; r < 19; ++r)
-    if (houses[0][r] != 0x7fff || houses[1][r] != 0x7fff)
+    if ((houses[0][r] | houses[1][r]) != 0x7fff)
       return false;
   return true;
 }

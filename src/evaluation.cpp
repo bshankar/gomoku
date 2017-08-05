@@ -1,5 +1,4 @@
 #include "evaluation.hpp"
-#include <cmath>
 
 double Evaluation::compute(Board board, int turn) {
   if (board.winner() == turn)
@@ -8,69 +7,60 @@ double Evaluation::compute(Board board, int turn) {
     return -1e99;
 
   double eval = 0;
-  eval = center(board, eval, turn);
-  eval = partials(board, eval, turn);
+  eval += center(board, turn);
+  eval += partials(board, turn);
   return eval;
 }
 
-double Evaluation::center(Board& board, double eval, int turn) {
+double Evaluation::center(Board& board, int turn) {
   // center control
-  for (int r = 0; r < 19; ++r)
-    for (int c = 0; c < 19; ++c) {
-      if (board.rows[turn][r][c])
-        eval += 38 - std::abs(r - 19/2.0) - std::abs(c - 19/2.0);
-      else if (board.rows[turn ^ 1][r][c])
-        eval -= 38 - std::abs(r - 19/2.0) - std::abs(c - 19/2.0);
-    }
+  double eval = 0;
+
+  for (int h = 0; h < 19; ++h)
+    eval += rowCenter(board.houses[turn][h], h) -
+      rowCenter(board.houses[turn ^ 1][h], h);
+  
   return eval;
 }
 
-double Evaluation::partials(Board &board, double eval, int turn) {
-  
-  for (int r = 0; r < 19; ++r) {
-    std::bitset<19> bitmask = 0b11111;
-    for (int i = 0; i < 19 - 5; ++i) {
-      // rows
-      auto resTurn = board.rows[turn][r] & bitmask;
-      auto resOpp = board.rows[turn ^ 1][r] & bitmask;
-      if (resTurn != 0 && resOpp == 0)
-        eval += 100*pow(2, resTurn.count());
-      else if (resTurn == 0 && resOpp != 0)
-        eval -= 100*pow(2, resOpp.count());
-
-      // colns
-      resTurn = board.cols[turn][r] & bitmask;
-      resOpp = board.cols[turn ^ 1][r] & bitmask;
-      if (resTurn != 0 && resOpp == 0)
-        eval += 100*pow(2, resTurn.count());
-      else if (resTurn == 0 && resOpp != 0)
-        eval -= 100*pow(2, resOpp.count());
-      
-      bitmask <<= 1;
+double Evaluation::rowCenter(board_t house, int row) {
+  double eval = 0;
+  int col = 0;
+  while (house) {
+    if (house & 1) {
+      eval += 38 - std::abs(row - 19/2.0) - std::abs(col - 19/2.0);
+      house--;
     }
+    int moveBy = __builtin_ffs(house) - 1;
+    col += moveBy;
+    house >>= moveBy;
   }
+  return eval;
+}
 
-  for (int d = 0; d < 37; ++d) {
-    std::bitset<19> bitmask = 0b11111;
-    for (int i = 0; i < 19 - 5; ++i) {
-      // diagonals
-      auto resTurn = board.diag[turn][d] & bitmask;
-      auto resOpp = board.diag[turn ^ 1][d] & bitmask;
-      if (resTurn != 0 && resOpp == 0)
-        eval += 100*pow(2, resTurn.count());
-      else if (resTurn == 0 && resOpp != 0)
-        eval -= 100*pow(2, resOpp.count());
-      
-      // anti diagonals
-      resTurn = board.antiDiag[turn][d] & bitmask;
-      resOpp = board.antiDiag[turn][d] & bitmask;
-      if (resTurn != 0 && resOpp == 0)
-        eval += 100*pow(2, resTurn.count());
-      else if (resTurn == 0 && resOpp != 0)
-        eval -= 100*pow(2, resOpp.count());
-      
-      bitmask <<= 1;
-    }
+double Evaluation::partials(Board &board, int turn) {
+  double eval = 0;
+  for (int h = 0; h < 112; ++h)
+    eval += compareHouses(board.houses[turn][h],
+                          board.houses[turn ^ 1][h]);
+  return eval;
+}
+
+double Evaluation::compareHouses(board_t h1, board_t h2) {
+  board_t bitmask = 0b11111;
+  double eval = 0;
+  
+  while (h1 || h2) {
+    auto res = h1 & bitmask,
+      resOpp = h2 & bitmask;
+
+    if (res != 0 && resOpp == 0)
+      eval += 100*(1 << __builtin_popcount(res));
+    else if (res == 0 && resOpp != 0)
+      eval -= 100*(1 << __builtin_popcount(resOpp));
+
+    h1 >>= 1;
+    h2 >>= 1;
   }
   return eval;
 }

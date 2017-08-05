@@ -10,7 +10,7 @@ public:
   int winner(); 
   bool isFull();
   
-  board_t houses[2][112];
+  board_t houses[2][112] = {};
   bool isWinning(board_t house);
 };
 

@@ -1,17 +1,17 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include <vector>
 #include "evaluation.hpp"
 
 class Search {
 public:
   Search();
-  double negamax(Board board, int depth, double alpha,
+  double negamax(Board& board, int depth, double alpha,
               double beta, int turn);
-  std::vector<Board> pv;
+  Board pv[100];
 private:
-  std::vector<Board> generateMoves(Board board, int turn);
-  std::vector<Board> orderMoves(std::vector<Board> moves, int turn);
+  std::vector<Board> generateMoves(const Board& board, int turn);
   Evaluation eval;
 };
 
