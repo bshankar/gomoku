@@ -1,8 +1,7 @@
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
-#include <vector>
-#include <bitset>
+typedef unsigned int board_t;
 
 class Board {
 public:
@@ -11,10 +10,8 @@ public:
   int winner(); 
   bool isFull();
   
-  std::bitset<19> rows[2][19], cols[2][19],
-    diag[2][37], antiDiag[2][37];
-
-  bool isWinning(std::bitset<19> house);
+  board_t houses[2][112];
+  bool isWinning(board_t house);
 };
 
 #endif
