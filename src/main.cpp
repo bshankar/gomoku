@@ -39,7 +39,7 @@ void playComputer(int depth) {
   cout << "Allow me to play first? (y or n): ";
   string res;
   cin >> res;
-
+                                
   Board board;
   int row, col, turn = 0;
   Search search;
@@ -49,13 +49,14 @@ void playComputer(int depth) {
     computerTurn = 0;
   else
     computerTurn = 1;
-
+  
   playerTurn = computerTurn ^ 1;
   
   while (board.winner() == -1) {
     if (computerTurn == turn) {
       cout << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
-      board = search.pv[depth];
+      auto move = search.pv[depth];
+      board.place(move);
       board.print();
       turn ^= 1;
     } else {
@@ -82,7 +83,8 @@ void playItself(int depth) {
   int turn = 0;
   while (board.winner() == -1 && !board.isFull()) {
       cout << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
-      board = search.pv[depth];
+      auto move = search.pv[depth];
+      board.place(move);
       board.print();
       turn ^= 1;
   }
@@ -95,12 +97,22 @@ void playItself(int depth) {
 void test(int depth, int turn) {
   Board board;
   Search search;
-  Evaluation eval;
   board.place(9, 9, 0);
   board.print();
-  cout << eval.compute(board, turn) << "\n";
+  cout << board.eval << "\n";
+  board.place(0, 9, 1);
+  cout << board.eval << "\n";
+  board.print();
+  board.remove(0, 9, 1);
+  cout << board.eval << "\n";
+  board.print();
+  board.remove(9, 9, 0);
+  cout << board.eval << "\n";
+  board.print();
   cout << "Score: " << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
-  search.pv[depth].print();
+  auto move = search.pv[depth];
+  board.place(move);
+  board.print();
 }
 
 int main(int argc, char* argv[]) {
