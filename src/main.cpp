@@ -100,15 +100,18 @@ void test(int depth, int turn) {
   board.place(9, 9, 0);
   board.print();
   cout << board.eval << "\n";
-  board.place(0, 9, 1);
-  cout << board.eval << "\n";
+  board.place(0, 0, 1);
   board.print();
-  board.remove(0, 9, 1);
   cout << board.eval << "\n";
+  board.place(8, 9, 0);
   board.print();
-  board.remove(9, 9, 0);
   cout << board.eval << "\n";
+  board.remove(8, 9, 0);
   board.print();
+  cout << board.eval << "\n";
+  board.place(10, 11, 0);
+  board.print();
+  cout << board.eval << "\n";
   cout << "Score: " << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
   auto move = search.pv[depth];
   board.place(move);
@@ -126,7 +129,7 @@ int main(int argc, char* argv[]) {
       playComputer(atoi(argv[2]));
     }
     else if (string(argv[1]) == "-t")
-      test(atoi(argv[2]), 1);
+      test(atoi(argv[2]), 0);
     else if (string(argv[1]) == "-i")
       playItself(atoi(argv[2]));
     else

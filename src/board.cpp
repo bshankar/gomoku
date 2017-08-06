@@ -96,15 +96,15 @@ void Board::updateCenter(int row, int col, int value) {
   if (houses[value][row] & (1 << col)) {
     // value was inserted here
     if (value)
-      eval -= 38 - std::abs(row - 19/2.0) - std::abs(col - 19/2.0);
+      eval -= 18 - abs(row - 19/2) - abs(col - 19/2);
     else
-      eval += 38 - std::abs(row - 19/2.0) - std::abs(col - 19/2.0);
+      eval += 18 - abs(row - 19/2) - abs(col - 19/2);
   } else {
     // value was removed
     if (value)
-      eval += 38 - std::abs(row - 19/2.0) - std::abs(col - 19/2.0);
+      eval += 18 - abs(row - 19/2) - abs(col - 19/2);
     else
-      eval -= 38 - std::abs(row - 19/2.0) - std::abs(col - 19/2.0);
+      eval -= 18 - abs(row - 19/2) - abs(col - 19/2);
   }
 }
 
