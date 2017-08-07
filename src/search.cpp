@@ -1,5 +1,7 @@
 #include "search.hpp"
 #include <algorithm>
+#include <iostream>
+using std::cout;
 using std::vector;
 
 
@@ -25,15 +27,15 @@ vector<Move> Search::generateMoves(const Board& board, int turn) {
   return moves;
 }
 
+
 double Search::negamax(Board& board, int depth,
                        double alpha, double beta, int turn) {
   if (!depth || board.winner() != -1) {
     return turn ? -board.eval: board.eval;
   }
-
-  auto nextMoves = generateMoves(board, turn);
-  double bestValue = -1e200;
-  for (auto move: nextMoves) {
+ 
+  double bestValue = -1e13;
+  for (auto move: generateMoves(board, turn)) {
     board.place(move);
     double v = -negamax(board, depth - 1, -beta, -alpha, turn^1);
     board.remove(move);
@@ -48,4 +50,3 @@ double Search::negamax(Board& board, int depth,
   }
   return bestValue;
 }
-

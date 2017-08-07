@@ -54,7 +54,7 @@ void playComputer(int depth) {
   
   while (board.winner() == -1) {
     if (computerTurn == turn) {
-      cout << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
+      cout << search.negamax(board, depth, -1e15, 1e15, turn) << "\n";
       auto move = search.pv[depth];
       board.place(move);
       board.print();
@@ -82,7 +82,7 @@ void playItself(int depth) {
   Search search;
   int turn = 0;
   while (board.winner() == -1 && !board.isFull()) {
-      cout << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
+      cout << search.negamax(board, depth, -1e15, 1e15, turn) << "\n";
       auto move = search.pv[depth];
       board.place(move);
       board.print();
@@ -103,7 +103,9 @@ void test(int depth, int turn) {
   board.place(0, 0, 1);
   board.print();
   cout << board.eval << "\n";
-  cout << "Score: " << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
+  cout << "Score: " << search.negamax(board, depth, -1e15, 1e15, turn) << "\n";
+  board.print();
+  cout << board.eval << "\n";
   auto move = search.pv[depth];
   board.place(move);
   board.print();

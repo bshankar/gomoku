@@ -45,6 +45,11 @@ bool Board::remove(int row, int col, int value) {
     houses[value][75 + row + col] ^= (1 << row);
 
     // assume we don't search after somebody won
+    if (hasWon == 1)
+      eval -= -1e12;
+    else if (!hasWon)
+      eval += -1e12;
+    
     hasWon = -1;
     updateEval(row, col, value);
     return true;
@@ -92,23 +97,6 @@ bool Board::isFull() {
 }
 
 
-void Board::updateCenter(int row, int col, int value) {
-  if (houses[value][row] & (1 << col)) {
-    // value was inserted here
-    if (value)
-      eval -= 18 - abs(row - 19/2) - abs(col - 19/2);
-    else
-      eval += 18 - abs(row - 19/2) - abs(col - 19/2);
-  } else {
-    // value was removed
-    if (value)
-      eval += 18 - abs(row - 19/2) - abs(col - 19/2);
-    else
-      eval -= 18 - abs(row - 19/2) - abs(col - 19/2);
-  }
-}
-
-
 void Board::updatePartials(int row, int col, int value) {
   auto housesToChange = {row, 19 + col, 38 + row - col + 18, 75 + row + col};
   for (auto h: housesToChange) {
@@ -122,14 +110,13 @@ void Board::updatePartials(int row, int col, int value) {
 
 void Board::updateEval(int row, int col, int value) {
   if (!hasWon) {
-    eval = 1e100;
+    eval = 1e12;
     return;
   }
   else if (hasWon == 1) {
-    eval = -1e100;
+    eval = -1e12;
     return;
   }
-  updateCenter(row, col, value);
   updatePartials(row, col, value);
 }
 
