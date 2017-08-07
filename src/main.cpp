@@ -103,15 +103,6 @@ void test(int depth, int turn) {
   board.place(0, 0, 1);
   board.print();
   cout << board.eval << "\n";
-  board.place(8, 9, 0);
-  board.print();
-  cout << board.eval << "\n";
-  board.remove(8, 9, 0);
-  board.print();
-  cout << board.eval << "\n";
-  board.place(10, 11, 0);
-  board.print();
-  cout << board.eval << "\n";
   cout << "Score: " << search.negamax(board, depth, -1e100, 1e100, turn) << "\n";
   auto move = search.pv[depth];
   board.place(move);

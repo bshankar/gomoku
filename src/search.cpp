@@ -14,7 +14,7 @@ vector<Move> Search::generateMoves(const Board& board, int turn) {
       brd >>= __builtin_ffs(brd) - 1;
       Move move = {r, c, turn};
       moves.push_back(move);
-      brd--;
+      --brd;
     }
   }
   // order moves by center influence
@@ -33,7 +33,6 @@ double Search::negamax(Board& board, int depth,
 
   auto nextMoves = generateMoves(board, turn);
   double bestValue = -1e200;
-  Move bestMove;
   for (auto move: nextMoves) {
     board.place(move);
     double v = -negamax(board, depth - 1, -beta, -alpha, turn^1);
@@ -41,13 +40,12 @@ double Search::negamax(Board& board, int depth,
 
     if (v > bestValue) {
       bestValue = v;
-      bestMove = move;
+      pv[depth] = move;
     }
     alpha = std::max(v, alpha);
     if (alpha >= beta)
       break;
   }
-  pv[depth] = bestMove;
   return bestValue;
 }
 
