@@ -1,30 +1,21 @@
 #include "search.hpp"
+#include "data.hpp"
 #include <algorithm>
 #include <iostream>
 using std::cout;
 using std::vector;
 
 
-vector<Move> Search::generateMoves(const Board& board, int turn) {
-  vector<Move> moves;
-  for (int r = 0; r < 19; ++r) {
-    auto brd = ~(board.houses[0][r] | board.houses[1][r]);
-    brd &= 0x7ffff;
-    auto c = 0;
-    while (brd) {
-      c += __builtin_ffs(brd) - 1;
-      brd >>= __builtin_ffs(brd) - 1;
-      Move move = {r, c, turn};
-      moves.push_back(move);
-      --brd;
-    }
+void Search::generateMoves(Move moves[], const Board& board, int turn) {
+  int index = 0;
+  for (int i = 0; i < 361; ++i) {
+    auto r = bestCells[i][0],
+      c = bestCells[i][1];
+    if (board.houses[0][r] & (1 << c) || board.houses[1][r] & (1 << c))
+      continue;
+    moves[index] = {r, c, turn};
+    ++index;
   }
-  // order moves by center influence
-  std::sort(moves.begin(), moves.end(), [](Move m1, Move m2) {
-      return 18 - abs(m1.row - 19/2) - abs(m1.col - 19/2) >
-        18 - abs(m2.row - 19/2) - abs(m2.col - 19/2);
-    });
-  return moves;
 }
 
 
@@ -35,18 +26,22 @@ double Search::negamax(Board& board, int depth,
   }
  
   double bestValue = -1e13;
-  for (auto move: generateMoves(board, turn)) {
-    board.place(move);
-    double v = -negamax(board, depth - 1, -beta, -alpha, turn^1);
-    board.remove(move);
+  Move moves[361] = {};
+  generateMoves(moves, board, turn);
+  int index = 0;
+  while (index < 361 && moves[index].row != -1) {
+    board.place(moves[index]);
+    double v = -0.98*negamax(board, depth - 1, -beta, -alpha, turn^1);
+    board.remove(moves[index]);
 
     if (v > bestValue) {
       bestValue = v;
-      pv[depth] = move;
+      pv[depth] = moves[index];
     }
     alpha = std::max(v, alpha);
     if (alpha >= beta)
       break;
+    ++index;
   }
   return bestValue;
 }
