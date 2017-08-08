@@ -3,14 +3,20 @@
 
 
 void Board::print() {
+  std::cout << " ";
+  for (int i = 0; i < 19; ++i)
+    std::cout << " " << i % 10;
+  std::cout << "\n";
+  
   for (int r = 0; r < 19; ++r) {
+    std::cout << r % 10 << " ";
     for (int c = 0; c < 19; ++c) {
       if (houses[0][r] & (1 << c))
-        std::cout << "o ";
+        std::cout << "O ";
       else if (houses[1][r] & (1 << c))
-        std::cout << "x ";
+        std::cout << "X ";
       else
-        std::cout << ". ";
+        std::cout << "· ";
     }
     std::cout << "\n";
   }
@@ -124,15 +130,26 @@ void Board::updateEval(int row, int col, int value) {
 double Board::compareHouses(board_t h1, board_t h2) {
   board_t bitmask = 0b11111;
   double eval = 0;
+
+  double patternScores[] = {0, 1, 25, 500, 7500};
   
   while (h1 | h2) {
     auto res = h1 & bitmask,
       resOpp = h2 & bitmask;
 
-    if (res != 0 && resOpp == 0)
-      eval += 100*(1 << __builtin_popcount(res));
-    else if (res == 0 && resOpp != 0)
-      eval -= 100*(1 << __builtin_popcount(resOpp));
+    if (res != 0 && resOpp == 0) {
+      eval += patternScores[__builtin_popcount(res)];
+
+      if ((res & 0xb1110) == 0xb1110)
+        eval += 75000;
+    }
+    
+    else if (res == 0 && resOpp != 0) {
+      eval -= patternScores[__builtin_popcount(resOpp)];
+
+      if ((resOpp & 0xb1110) == 0xb1110)
+        eval -= 75000;
+    }
 
     h1 >>= 1;
     h2 >>= 1;
