@@ -25,7 +25,7 @@ void playHuman() {
 
     if (row >= 0 && row < 19 &&
         col >= 0 && col < 19 &&
-        board.place(row, col, turn))
+        board.place(row*19 + col, turn))
       turn ^= 1;
     else 
       cout << "Invalid cell. Try again.\n";
@@ -42,7 +42,7 @@ void playComputer(int depth) {
                                 
   Board board;
   int row, col, turn = 0;
-  Search search;
+  Search search(board);
   int computerTurn, playerTurn;
   
   if (res == "y" or res == "yes")
@@ -54,9 +54,9 @@ void playComputer(int depth) {
   
   while (board.winner() == -1) {
     if (computerTurn == turn) {
-      cout << search.negamax(board, depth, -1e15, 1e15, turn) << "\n";
+      cout << search.negamax(depth, -1e15, 1e15, turn) << "\n";
       auto move = search.pv[depth];
-      board.place(move);
+      board.place(move, turn);
       board.print();
       turn ^= 1;
     } else {
@@ -67,7 +67,7 @@ void playComputer(int depth) {
 
       if (row >= 0 && row < 19 &&
           col >= 0 && col < 19 &&
-          board.place(row, col, turn)) 
+          board.place(row*19 + col, turn)) 
         turn ^= 1;
       else 
         cout << "Invalid cell. Try again.\n";
@@ -79,12 +79,12 @@ void playComputer(int depth) {
 
 void playItself(int depth) {
   Board board;
-  Search search;
+  Search search(board);
   int turn = 0;
   while (board.winner() == -1 && !board.isFull()) {
-      cout << search.negamax(board, depth, -1e15, 1e15, turn) << "\n";
+      cout << search.negamax(depth, -1e15, 1e15, turn) << "\n";
       auto move = search.pv[depth];
-      board.place(move);
+      board.place(move, turn);
       board.print();
       turn ^= 1;
   }
@@ -96,18 +96,18 @@ void playItself(int depth) {
 
 void test(int depth, int turn) {
   Board board;
-  Search search;
-  board.place(9, 9, 0);
+  Search search(board);
+  board.place(9*19 + 9, 0);
   board.print();
   cout << board.eval << "\n";
-  board.place(0, 0, 1);
+  board.place(0, 1);
   board.print();
   cout << board.eval << "\n";
-  cout << "Score: " << search.negamax(board, depth, -1e15, 1e15, turn) << "\n";
+  cout << "Score: " << search.negamax(depth, -1e15, 1e15, turn) << "\n";
   board.print();
   cout << board.eval << "\n";
   auto move = search.pv[depth];
-  board.place(move);
+  board.place(move, turn);
   board.print();
 }
 

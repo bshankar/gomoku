@@ -11,9 +11,8 @@ Board::Board() {
                  std::numeric_limits<uint64_t>::max());
 
   for (int i = 0; i < 2; ++i)
-    for (int j = 0; j < 19; ++j)
-      for (int k = 0; k < 19; ++k)
-        rtable[i][j][k] = distribution(generator);
+    for (int j = 0; j < 361; ++j)
+        rtable[i][j] = distribution(generator);
 }
 
 
@@ -38,7 +37,10 @@ void Board::print() {
 }
 
 
-bool Board::place(int row, int col, int value) {
+bool Board::place(row_t move, bool value) {
+  auto row = move/19;
+  auto col = move % 19;
+  
   if (houses[0][row] & (1 << col) ||
       houses[1][row] & (1 << col))
     return false;
@@ -53,13 +55,16 @@ bool Board::place(int row, int col, int value) {
       isWinning(houses[value][75 + row + col]))
     hasWon = value;
 
-  updateEval(row, col, value);
-  updateHash(row, col, value);
+  updateEval(move, value);
+  updateHash(move, value);
   return true;
 }
 
 
-bool Board::remove(int row, int col, int value) {
+bool Board::remove(row_t move, bool value) {
+  auto row = move/19;
+  auto col = move % 19;
+  
   if (houses[value][row] & (1 << col)) {
     houses[value][row] ^= (1 << col);
     houses[value][19 + col] ^= (1 << row);
@@ -68,26 +73,16 @@ bool Board::remove(int row, int col, int value) {
 
     // assume we don't search after somebody won
     if (hasWon == 1)
-      eval -= -1e12;
+      eval -= -32767;
     else if (!hasWon)
-      eval += -1e12;
+      eval += -32767;
     
     hasWon = -1;
-    updateEval(row, col, value);
-    updateHash(row, col, value);
+    updateEval(move, value);
+    updateHash(move, value);
     return true;
   }
   return false;
-}
-
-
-bool Board::place(Move move) {
-  return place(move.row, move.col, move.value);
-}
-
-
-bool Board::remove(Move move) {
-  return remove(move.row, move.col, move.value);
 }
 
 
@@ -120,7 +115,10 @@ bool Board::isFull() {
 }
 
 
-void Board::updatePartials(int row, int col, int value) {
+void Board::updatePartials(row_t move, bool value) {
+  auto row = move/19;
+  auto col = move % 19;
+  
   auto housesToChange = {row, 19 + col, 38 + row - col + 18, 75 + row + col};
   for (auto h: housesToChange) {
     auto prev = partialEvals[h];
@@ -131,24 +129,24 @@ void Board::updatePartials(int row, int col, int value) {
 }
 
 
-void Board::updateEval(int row, int col, int value) {
+void Board::updateEval(row_t move, bool value) {
   if (!hasWon) {
-    eval = 1e12;
+    eval = 32767;
     return;
   }
   else if (hasWon == 1) {
-    eval = -1e12;
+    eval = -32767;
     return;
   }
-  updatePartials(row, col, value);
+  updatePartials(move, value);
 }
 
 
-double Board::compareHouses(board_t h1, board_t h2) {
+eval_t Board::compareHouses(board_t h1, board_t h2) {
   board_t bitmask = 0b11111;
   double eval = 0;
 
-  double patternScores[] = {0, 1, 25, 500, 7500};
+  double patternScores[] = {0, 1, 21, 337, 4045};
   
   while (h1 | h2) {
     auto res = h1 & bitmask,
@@ -156,16 +154,10 @@ double Board::compareHouses(board_t h1, board_t h2) {
 
     if (res != 0 && resOpp == 0) {
       eval += patternScores[__builtin_popcount(res)];
-
-      if ((res & 0b1110) == 0b1110)
-        eval += 50000;
     }
     
     else if (res == 0 && resOpp != 0) {
       eval -= patternScores[__builtin_popcount(resOpp)];
-
-      if ((resOpp & 0b1110) == 0b1110)
-        eval -= 75000;
     }
 
     h1 >>= 1;
@@ -175,6 +167,6 @@ double Board::compareHouses(board_t h1, board_t h2) {
 }
 
 
-void Board::updateHash(int row, int col, int value) {
-  hash ^= rtable[value][row][col];
+void Board::updateHash(row_t move, int value) {
+  hash ^= rtable[value][move];
 }

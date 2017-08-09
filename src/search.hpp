@@ -3,14 +3,24 @@
 
 #include <vector>
 #include "board.hpp"
-typedef Board::Move Move;
 
 class Search {
 public:
-  double negamax(Board& board, int depth, double alpha,
-                 double beta, int turn);
-  void generateMoves(Move moves[], const Board& board, int turn);
-  Move pv[100] = {};
+  Search(Board& board);
+  double negamax(int depth, double alpha, double beta, bool turn);
+  void generateMoves(row_t moves[], bool turn);
+  row_t pv[100] = {};
+  
+  struct ttEntry {
+    row_t key;
+    eval_t eval;
+    eval_t computedEval;
+    uint8_t depth;
+    row_t bestMove;
+  };
+
+  Board& board;
+  std::vector<ttEntry> hashTable;
 };
 
 #endif
