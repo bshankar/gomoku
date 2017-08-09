@@ -1,10 +1,12 @@
 #ifndef BOARD_HPP
 #define BOARD_HPP
 
-typedef unsigned int board_t;
+#include <cstdint>
+typedef uint32_t board_t;
 
 class Board {
 public:
+  Board();
   bool place(int row, int col, int val);
   bool remove(int row, int col, int val);
   void print();
@@ -31,6 +33,11 @@ public:
   void updateCenter(int row, int col, int value);
   void updatePartials(int row, int col, int value);
   void updateEval(int row, int col, int value);
+
+  // zobrist hashing
+  uint64_t hash;
+  uint64_t rtable[2][19][19]; // random number table for hashing
+  void updateHash(int row, int col, int value);
 };
 
 #endif

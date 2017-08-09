@@ -1,5 +1,20 @@
 #include "board.hpp"
 #include <iostream>
+#include <random>
+#include <limits>
+
+Board::Board() {
+  // initialize rtable
+  std::default_random_engine generator;
+  std::uniform_int_distribution<uint64_t>
+    distribution(std::numeric_limits<uint64_t>::min(),
+                 std::numeric_limits<uint64_t>::max());
+
+  for (int i = 0; i < 2; ++i)
+    for (int j = 0; j < 19; ++j)
+      for (int k = 0; k < 19; ++k)
+        rtable[i][j][k] = distribution(generator);
+}
 
 
 void Board::print() {
@@ -39,6 +54,7 @@ bool Board::place(int row, int col, int value) {
     hasWon = value;
 
   updateEval(row, col, value);
+  updateHash(row, col, value);
   return true;
 }
 
@@ -58,6 +74,7 @@ bool Board::remove(int row, int col, int value) {
     
     hasWon = -1;
     updateEval(row, col, value);
+    updateHash(row, col, value);
     return true;
   }
   return false;
@@ -155,4 +172,9 @@ double Board::compareHouses(board_t h1, board_t h2) {
     h2 >>= 1;
   }
   return eval;
+}
+
+
+void Board::updateHash(int row, int col, int value) {
+  hash ^= rtable[value][row][col];
 }
