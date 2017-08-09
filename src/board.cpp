@@ -73,7 +73,7 @@ bool Board::remove(row_t move, bool value) {
 
     // assume we don't search after somebody won
     if (hasWon == 1)
-      eval -= -32767;
+      eval -= -32768;
     else if (!hasWon)
       eval += -32767;
     
@@ -135,7 +135,7 @@ void Board::updateEval(row_t move, bool value) {
     return;
   }
   else if (hasWon == 1) {
-    eval = -32767;
+    eval = -32768;
     return;
   }
   updatePartials(move, value);

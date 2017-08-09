@@ -4,9 +4,12 @@
 #include <iostream>
 using std::cout;
 using std::vector;
+typedef Search::ttEntry::Flag Flag;
 
 
-Search::Search(Board& board) : board(board) {}
+Search::Search(Board& board) : board(board) {
+  hashTable.resize(1 << 24);
+}
 
 
 void Search::generateMoves(row_t moves[], bool turn) {
@@ -21,29 +24,62 @@ void Search::generateMoves(row_t moves[], bool turn) {
   }
 }
 
+eval_t Search::negamax(int depth, eval_t alpha, eval_t beta, bool turn) {
+  auto alphaOrig = alpha;
 
-double Search::negamax(int depth, double alpha, double beta, bool turn) {
-  if (!depth || board.winner() != -1) {
-    return turn ? -board.eval: board.eval;
+  // Transposition Table Lookup; node is the lookup key for ttEntry
+  ttEntry entry = tableProbe();
+  if (entry.valid && entry.depth >= depth) {
+    if (entry.flag == Flag::EXACT)
+      return entry.eval;
+    else if (entry.flag == Flag::LOWERBOUND)
+      alpha = std::max(alpha, entry.eval);
+    else if (entry.flag == Flag::UPPERBOUND)
+      beta = std::min(beta, entry.eval);
+    if (alpha >= beta)
+      return entry.eval;
   }
- 
-  double bestValue = -1e13;
+  
+  if (!depth || board.winner() != -1)
+    return turn ? -board.eval : board.eval;
+
+  eval_t bestValue = -32768;
   row_t moves[361] = {362};
   generateMoves(moves, turn);
-  int index = 0;
+  auto index = 0;
   while (index < 361 && moves[index] != 362) {
     board.place(moves[index], turn);
-    double v = -0.98*negamax(depth - 1, -beta, -alpha, turn^1);
+    eval_t v = -negamax(depth - 1, -beta, -alpha, turn ^ 1);
     board.remove(moves[index], turn);
 
-    if (v > bestValue) {
-      bestValue = v;
-      pv[depth] = moves[index];
-    }
-    alpha = std::max(v, alpha);
+    bestValue = std::max(bestValue, v);
+    alpha = std::max(alpha, v);
     if (alpha >= beta)
       break;
-    ++index;
   }
+  
+  // Transposition Table Store; node is the lookup key for ttEntry
+  entry.eval = bestValue;
+  if (bestValue <= alphaOrig)
+    entry.flag = Flag::UPPERBOUND;
+  else if (bestValue >= beta)
+    entry.flag = Flag::LOWERBOUND;
+  else
+    entry.flag = Flag::EXACT;
+
+  entry.depth = depth;
+  tableStore();
+
   return bestValue;
+}
+
+
+Search::ttEntry Search::tableProbe() {
+  return hashTable[board.hash & 0xffffff];
+}
+
+
+void Search::tableStore() {
+  auto entry = tableProbe();
+  entry.key = board.hash >> 48;
 }
