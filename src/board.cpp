@@ -140,14 +140,14 @@ double Board::compareHouses(board_t h1, board_t h2) {
     if (res != 0 && resOpp == 0) {
       eval += patternScores[__builtin_popcount(res)];
 
-      if ((res & 0xb1110) == 0xb1110)
-        eval += 75000;
+      if ((res & 0b1110) == 0b1110)
+        eval += 50000;
     }
     
     else if (res == 0 && resOpp != 0) {
       eval -= patternScores[__builtin_popcount(resOpp)];
 
-      if ((resOpp & 0xb1110) == 0xb1110)
+      if ((resOpp & 0b1110) == 0b1110)
         eval -= 75000;
     }
 
