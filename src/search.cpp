@@ -24,12 +24,14 @@ void Search::generateMoves(Move moves[], bool turn) {
   }
 }
 
+
 Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   auto alphaOrig = alpha;
 
   // Transposition Table Lookup; node is the lookup key for TTEntry
   TTEntry entry = hashTable[board.hash & 0xffffff];
-  if (entry.valid && entry.depth >= depth) {
+  if (entry.flag != Flag::INVALID && entry.key == (board.hash >> 48) &&
+      entry.depth >= depth) {
     if (entry.flag == Flag::EXACT)
       return entry.eval;
     else if (entry.flag == Flag::LOWERBOUND)
@@ -45,7 +47,11 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
 
   Eval bestValue = -1000000;
   Move bestMove = -1;
-  Move moves[361] = {362};
+  Move moves[361] = {};
+
+  for (int i = 0; i < 361; ++i)
+    moves[i] = 362;
+  
   generateMoves(moves, turn);
   auto index = 0;
   while (index < 361 && moves[index] != 362) {
@@ -76,7 +82,6 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   entry.depth = depth;
   entry.bestMove = bestMove;
   entry.key = board.hash >> 48;
-  entry.valid = true;
   hashTable[board.hash & 0xffffff] = entry;
   return bestValue;
 }

@@ -84,7 +84,7 @@ void playItself(int depth) {
   Search search(board);
   int turn = 0;
   while (board.winner() == -1 && !board.isFull()) {
-      cout << search.negamax(depth, -32768, 32767, turn) << "\n";
+      cout << search.negamax(depth, -1000000, 1000000, turn) << "\n";
       auto move = search.hashTable[board.hash & 0xffffff].bestMove; 
       board.place(move, turn);
       board.print();

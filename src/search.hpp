@@ -13,18 +13,17 @@ public:
   
   struct TTEntry {
     Key key;                  // 2 bytes
-    Eval eval;                // 2 bytes        
+    Eval eval;                // 4 bytes        
     Depth depth;              // 1 byte
-    Move bestMove = -1;        // 2 bytes
+    Move bestMove;            // 2 bytes
     
-    enum Flag : Move {       // 1 byte
+    enum Flag : Move {        // 1 byte
       UPPERBOUND,
       LOWERBOUND,
-      EXACT
+      EXACT,
+      INVALID
     };
-
-    Flag flag;
-    bool valid = false;
+    Flag flag = Flag::INVALID;
   };
 
   Board& board;
