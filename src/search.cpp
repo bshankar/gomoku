@@ -4,7 +4,7 @@
 #include <iostream>
 using std::cout;
 using std::vector;
-typedef Search::ttEntry::Flag Flag;
+typedef Search::TTEntry::Flag Flag;
 
 
 Search::Search(Board& board) : board(board) {
@@ -12,11 +12,11 @@ Search::Search(Board& board) : board(board) {
 }
 
 
-void Search::generateMoves(row_t moves[], bool turn) {
+void Search::generateMoves(Move moves[], bool turn) {
   int index = 0;
   for (int i = 0; i < 361; ++i) {
-    auto r = bestCells[i][0],
-      c = bestCells[i][1];
+    auto r = bestMoves[i]/19,
+      c = bestMoves[i] % 19;
     if (board.houses[0][r] & (1 << c) || board.houses[1][r] & (1 << c))
       continue;
     moves[index] = r*19 + c;
@@ -24,11 +24,11 @@ void Search::generateMoves(row_t moves[], bool turn) {
   }
 }
 
-eval_t Search::negamax(int depth, eval_t alpha, eval_t beta, bool turn) {
+Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   auto alphaOrig = alpha;
 
-  // Transposition Table Lookup; node is the lookup key for ttEntry
-  ttEntry entry = tableProbe();
+  // Transposition Table Lookup; node is the lookup key for TTEntry
+  TTEntry entry = hashTable[board.hash & 0xffffff];
   if (entry.valid && entry.depth >= depth) {
     if (entry.flag == Flag::EXACT)
       return entry.eval;
@@ -43,22 +43,28 @@ eval_t Search::negamax(int depth, eval_t alpha, eval_t beta, bool turn) {
   if (!depth || board.winner() != -1)
     return turn ? -board.eval : board.eval;
 
-  eval_t bestValue = -32768;
-  row_t moves[361] = {362};
+  Eval bestValue = -1000000;
+  Move bestMove = -1;
+  Move moves[361] = {362};
   generateMoves(moves, turn);
   auto index = 0;
   while (index < 361 && moves[index] != 362) {
     board.place(moves[index], turn);
-    eval_t v = -negamax(depth - 1, -beta, -alpha, turn ^ 1);
+    Eval v = -negamax(depth - 1, -beta, -alpha, turn ^ 1);
     board.remove(moves[index], turn);
 
-    bestValue = std::max(bestValue, v);
+    if (v > bestValue) {
+      bestValue = v;
+      bestMove = moves[index];
+    }
+
     alpha = std::max(alpha, v);
     if (alpha >= beta)
       break;
+    ++index; 
   }
   
-  // Transposition Table Store; node is the lookup key for ttEntry
+  // Transposition Table Store; node is the lookup key for TTEntry
   entry.eval = bestValue;
   if (bestValue <= alphaOrig)
     entry.flag = Flag::UPPERBOUND;
@@ -68,18 +74,10 @@ eval_t Search::negamax(int depth, eval_t alpha, eval_t beta, bool turn) {
     entry.flag = Flag::EXACT;
 
   entry.depth = depth;
-  tableStore();
-
+  entry.bestMove = bestMove;
+  entry.key = board.hash >> 48;
+  entry.valid = true;
+  hashTable[board.hash & 0xffffff] = entry;
   return bestValue;
 }
 
-
-Search::ttEntry Search::tableProbe() {
-  return hashTable[board.hash & 0xffffff];
-}
-
-
-void Search::tableStore() {
-  auto entry = tableProbe();
-  entry.key = board.hash >> 48;
-}

@@ -25,8 +25,10 @@ void playHuman() {
 
     if (row >= 0 && row < 19 &&
         col >= 0 && col < 19 &&
-        board.place(row*19 + col, turn))
+        board.place(row*19 + col, turn)) {
+      cout << board.eval << "\n";
       turn ^= 1;
+    }
     else 
       cout << "Invalid cell. Try again.\n";
   }
@@ -54,8 +56,8 @@ void playComputer(int depth) {
   
   while (board.winner() == -1) {
     if (computerTurn == turn) {
-      cout << search.negamax(depth, -32768, 32767, turn) << "\n";
-      auto move = search.pv[depth];
+      cout << search.negamax(depth, -1000000, 1000000, turn) << "\n";
+      auto move = search.hashTable[board.hash & 0xffffff].bestMove; 
       board.place(move, turn);
       board.print();
       turn ^= 1;
@@ -64,8 +66,8 @@ void playComputer(int depth) {
       cout << "Put stone at: ";
       cin >> row >> col;
       cout << "\n";
-
-      if (row >= 0 && row < 19 &&
+                                
+      if (row >= 0 && row < 19 &&  // 
           col >= 0 && col < 19 &&
           board.place(row*19 + col, turn)) 
         turn ^= 1;
@@ -83,7 +85,7 @@ void playItself(int depth) {
   int turn = 0;
   while (board.winner() == -1 && !board.isFull()) {
       cout << search.negamax(depth, -32768, 32767, turn) << "\n";
-      auto move = search.pv[depth];
+      auto move = search.hashTable[board.hash & 0xffffff].bestMove; 
       board.place(move, turn);
       board.print();
       turn ^= 1;
@@ -93,22 +95,20 @@ void playItself(int depth) {
   } else
     cout << "Game drawn!\n";
 }
-
+  
 void test(int depth, int turn) {
   Board board;
-  Search search(board);
-  board.place(9*19 + 9, 0);
-  board.print();
-  cout << board.eval << "\n";
-  board.place(0, 1);
-  board.print();
-  cout << board.eval << "\n";
-  cout << "Score: " << search.negamax(depth, -32768, 32767, turn) << "\n";
-  board.print();
-  cout << board.eval << "\n";
-  auto move = search.pv[depth];
-  board.place(move, turn);
-  board.print();
+  for (int i = 9; i >= 5; --i) {
+    board.place(i*19 + i, 1);
+    board.print();
+    cout << board.eval << " " << board.hash << "\n";
+  }
+
+  for (int i = 5; i < 10; ++i) {
+    board.remove(i*19 + i, 1);
+    board.print();
+    cout << board.eval << " " << board.hash << "\n";
+  }
 }
 
 int main(int argc, char* argv[]) {

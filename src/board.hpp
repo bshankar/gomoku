@@ -2,34 +2,39 @@
 #define BOARD_HPP
 
 #include <cstdint>
-typedef uint32_t board_t;
-typedef uint16_t row_t;
-typedef int16_t eval_t;
+
+typedef uint64_t Hash;
+typedef uint32_t House;
+typedef uint16_t Move;
+typedef uint16_t Key;
+typedef int32_t Eval;
+typedef int8_t HasWon;
+
 
 class Board {
 public:
   Board();
-  bool place(row_t move, bool val);
-  bool remove(row_t move, bool val);
+  bool place(Move move, bool player);
+  bool remove(Move move, bool player);
   void print();
   int winner(); 
   bool isFull();
-  bool isWinning(board_t house);
+  bool isWinning(House house);
 
-  board_t houses[2][112] = {};
-  int8_t hasWon = -1;
+  House houses[2][112] = {};
+  HasWon hasWon = -1;
 
   // evaluation related stuff
-  eval_t eval = 0;
-  eval_t partialEvals[112] = {};
-  eval_t compareHouses(board_t h1, board_t h2);
-  void updatePartials(row_t move, bool value);
-  void updateEval(row_t move, bool value);
+  Eval eval = 0;
+  Eval partialEvals[112] = {};
+  Eval compareHouses(House h1, House h2);
+  void updatePartials(Move move, bool player);
+  void updateEval(Move move, bool player);
 
   // zobrist hashing
-  uint64_t hash;
-  uint64_t rtable[2][361]; // random number table for hashing
-  void updateHash(row_t move, int value);
+  Hash hash;
+  Hash rtable[2][361]; // random number table for hashing
+  void updateHash(Move move, int player);
 };
 
 #endif

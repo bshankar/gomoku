@@ -37,7 +37,7 @@ void Board::print() {
 }
 
 
-bool Board::place(row_t move, bool value) {
+bool Board::place(Move move, bool player) {
   auto row = move/19;
   auto col = move % 19;
   
@@ -45,41 +45,41 @@ bool Board::place(row_t move, bool value) {
       houses[1][row] & (1 << col))
     return false;
 
-  houses[value][row] |= (1 << col);
-  houses[value][19 + col] |= (1 << row); 
-  houses[value][38 + row - col + 18] |= (1 << row);
-  houses[value][75 + row + col] |= (1 << row);
+  houses[player][row] |= (1 << col);
+  houses[player][19 + col] |= (1 << row); 
+  houses[player][38 + row - col + 18] |= (1 << row);
+  houses[player][75 + row + col] |= (1 << row);
 
-  if (isWinning(houses[value][row]) || isWinning(houses[value][19 + col]) ||
-      isWinning(houses[value][38 + row - col + 18]) ||
-      isWinning(houses[value][75 + row + col]))
-    hasWon = value;
+  if (isWinning(houses[player][row]) || isWinning(houses[player][19 + col]) ||
+      isWinning(houses[player][38 + row - col + 18]) ||
+      isWinning(houses[player][75 + row + col]))
+    hasWon = player;
 
-  updateEval(move, value);
-  updateHash(move, value);
+  updateEval(move, player);
+  updateHash(move, player);
   return true;
 }
 
 
-bool Board::remove(row_t move, bool value) {
+bool Board::remove(Move move, bool player) {
   auto row = move/19;
   auto col = move % 19;
   
-  if (houses[value][row] & (1 << col)) {
-    houses[value][row] ^= (1 << col);
-    houses[value][19 + col] ^= (1 << row);
-    houses[value][38 + row - col + 18] ^= (1 << row);
-    houses[value][75 + row + col] ^= (1 << row);
+  if (houses[player][row] & (1 << col)) {
+    houses[player][row] ^= (1 << col);
+    houses[player][19 + col] ^= (1 << row);
+    houses[player][38 + row - col + 18] ^= (1 << row);
+    houses[player][75 + row + col] ^= (1 << row);
 
-    // assume we don't search after somebody won
     if (hasWon == 1)
-      eval -= -32768;
+      eval += 500000;
     else if (!hasWon)
-      eval += -32767;
+      eval -= 500000;
     
+    // assume we don't search after somebody won
     hasWon = -1;
-    updateEval(move, value);
-    updateHash(move, value);
+    updateEval(move, player);
+    updateHash(move, player);
     return true;
   }
   return false;
@@ -91,8 +91,8 @@ int Board::winner() {
 }
 
 
-bool Board::isWinning(board_t house) {
-  board_t bitmask = 0b11111;
+bool Board::isWinning(House house) {
+  House bitmask = 0b11111;
 
   while (house) {
     if ((house & bitmask) == bitmask)
@@ -115,7 +115,7 @@ bool Board::isFull() {
 }
 
 
-void Board::updatePartials(row_t move, bool value) {
+void Board::updatePartials(Move move, bool player) {
   auto row = move/19;
   auto col = move % 19;
   
@@ -129,21 +129,17 @@ void Board::updatePartials(row_t move, bool value) {
 }
 
 
-void Board::updateEval(row_t move, bool value) {
-  if (!hasWon) {
-    eval = 32767;
-    return;
-  }
-  else if (hasWon == 1) {
-    eval = -32768;
-    return;
-  }
-  updatePartials(move, value);
+void Board::updateEval(Move move, bool player) {
+  if (!hasWon)
+    eval += 500000;
+  else if (hasWon == 1)
+    eval -= 500000;
+  updatePartials(move, player);
 }
 
 
-eval_t Board::compareHouses(board_t h1, board_t h2) {
-  board_t bitmask = 0b11111;
+Eval Board::compareHouses(House h1, House h2) {
+  House bitmask = 0b11111;
   double eval = 0;
 
   double patternScores[] = {0, 1, 21, 337, 4045};
@@ -167,6 +163,6 @@ eval_t Board::compareHouses(board_t h1, board_t h2) {
 }
 
 
-void Board::updateHash(row_t move, int value) {
-  hash ^= rtable[value][move];
+void Board::updateHash(Move move, int player) {
+  hash ^= rtable[player][move];
 }

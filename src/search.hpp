@@ -3,21 +3,21 @@
 
 #include <vector>
 #include "board.hpp"
+typedef uint8_t Depth;
 
 class Search {
 public:
   Search(Board& board);
-  eval_t negamax(int depth, eval_t alpha, eval_t beta, bool turn);
-  void generateMoves(row_t moves[], bool turn);
-  row_t pv[100] = {};
+  Eval negamax(int depth, Eval alpha, Eval beta, bool turn);
+  void generateMoves(Move moves[], bool turn);
   
-  struct ttEntry {
-    row_t key;                  // 2 bytes
-    eval_t eval;                // 2 bytes        
-    uint8_t depth;              // 1 byte
-    row_t bestMove;             // 2 bytes
+  struct TTEntry {
+    Key key;                  // 2 bytes
+    Eval eval;                // 2 bytes        
+    Depth depth;              // 1 byte
+    Move bestMove = -1;        // 2 bytes
     
-    enum Flag : uint8_t {       // 1 byte
+    enum Flag : Move {       // 1 byte
       UPPERBOUND,
       LOWERBOUND,
       EXACT
@@ -28,9 +28,7 @@ public:
   };
 
   Board& board;
-  std::vector<ttEntry> hashTable;
-  ttEntry tableProbe();
-  void tableStore();
+  std::vector<TTEntry> hashTable;
 };
 
 #endif
