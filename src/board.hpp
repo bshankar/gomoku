@@ -36,6 +36,13 @@ public:
   Hash hash;
   Hash rtable[2][361]; // random number table for hashing
   void updateHash(Move move, int player);
+
+  struct Moves {
+    Move moveArray[361];
+    int end = 0;
+  };
+  
+  Moves prevMoves;
 };
 
 #endif

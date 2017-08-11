@@ -57,6 +57,9 @@ bool Board::place(Move move, bool player) {
 
   updateEval(move, player);
   updateHash(move, player);
+
+  prevMoves.moveArray[prevMoves.end] = move;
+  ++prevMoves.end;
   return true;
 }
 
@@ -80,6 +83,7 @@ bool Board::remove(Move move, bool player) {
     hasWon = -1;
     updateEval(move, player);
     updateHash(move, player);
+    --prevMoves.end;
     return true;
   }
   return false;

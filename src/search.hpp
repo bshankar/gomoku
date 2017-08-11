@@ -4,6 +4,7 @@
 #include <vector>
 #include "board.hpp"
 typedef uint8_t Depth;
+typedef Board::Moves Moves;
 
 class Search {
 public:
@@ -29,10 +30,6 @@ public:
   Board& board;
   std::vector<TTEntry> hashTable;
 
-  struct Moves {
-    Move moveArray[361];
-    int end = 0;
-  };
 
   void generateMoves(Moves& moves, bool turn);
   void putSurroundingCells(Moves& moves, House h, House index);

@@ -5,7 +5,6 @@
 using std::cout;
 using std::vector;
 typedef Search::TTEntry::Flag Flag;
-typedef Search::Moves Moves;
 
 
 Search::Search(Board& board) : board(board) {
@@ -101,6 +100,18 @@ void Search::putSurroundingCells(Moves& moves, House h, House index) {
 
 
 void Search::generateMoves(Moves& moves, bool turn) {
+
+  if (board.prevMoves.end >= 2) {
+    auto cell1 = board.prevMoves.moveArray[board.prevMoves.end - 1],
+      cell2 = board.prevMoves.moveArray[board.prevMoves.end - 2];
+
+    putSurroundingCells(moves, cell1/19, cell1 % 19);
+    putSurroundingCells(moves, cell2/19, cell1 % 19);
+    
+    if (moves.end)
+      return;
+  }
+  
   for (int p = 0; p < 2; ++p) 
     for (int h = 0; h < 19; ++h) { 
       auto house = board.houses[p][h];
