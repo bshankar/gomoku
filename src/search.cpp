@@ -5,23 +5,37 @@
 using std::cout;
 using std::vector;
 typedef Search::TTEntry::Flag Flag;
-
+typedef Search::Moves Moves;
 
 Search::Search(Board& board) : board(board) {
   hashTable.resize(1 << 24);
 }
 
 
-void Search::generateMoves(Move moves[], bool turn) {
-  int index = 0;
-  for (int i = 0; i < 361; ++i) {
-    auto r = bestMoves[i]/19,
-      c = bestMoves[i] % 19;
-    if (board.houses[0][r] & (1 << c) || board.houses[1][r] & (1 << c))
-      continue;
-    moves[index] = r*19 + c;
-    ++index;
-  }
+void Search::putSurroundingCells(Moves moves, House h, House index) {
+  // rows
+  
+  // cols
+
+  // diag
+
+  // antidiag
+}
+
+
+void Search::generateMoves(Moves moves, bool turn) {
+  for (int p = 0; p < 2; ++p) 
+    for (int h = 0; h < 19; ++h) { 
+      auto house = board.houses[p][h];
+
+      House index = 0;
+      while (house) {
+        if (h & 1)
+          putSurroundingCells(moves, h, index);
+        house >>= 1;
+        ++index;
+      }
+    }
 }
 
 
@@ -47,27 +61,23 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
 
   Eval bestValue = -1000000;
   Move bestMove = -1;
-  Move moves[361] = {};
-
-  for (int i = 0; i < 361; ++i)
-    moves[i] = 362;
+  Moves moves;
   
   generateMoves(moves, turn);
-  auto index = 0;
-  while (index < 361 && moves[index] != 362) {
-    board.place(moves[index], turn);
+
+  for (int i = 0; i < moves.end; ++i) {
+    board.place(moves.moveArray[i], turn);
     Eval v = -negamax(depth - 1, -beta, -alpha, turn ^ 1);
-    board.remove(moves[index], turn);
+    board.remove(moves.moveArray[i], turn);
 
     if (v > bestValue) {
       bestValue = v;
-      bestMove = moves[index];
+      bestMove = moves.moveArray[i];
     }
 
     alpha = std::max(alpha, v);
     if (alpha >= beta)
       break;
-    ++index; 
   }
   
   // Transposition Table Store; node is the lookup key for TTEntry

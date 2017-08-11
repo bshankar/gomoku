@@ -9,8 +9,7 @@ class Search {
 public:
   Search(Board& board);
   Eval negamax(int depth, Eval alpha, Eval beta, bool turn);
-  void generateMoves(Move moves[], bool turn);
-  
+    
   struct TTEntry {
     Key key;                  // 2 bytes
     Eval eval;                // 4 bytes        
@@ -28,6 +27,14 @@ public:
 
   Board& board;
   std::vector<TTEntry> hashTable;
+
+  struct Moves {
+    Move moveArray[361];
+    int end = 0;
+  };
+
+  void generateMoves(Moves moves, bool turn);
+  void putSurroundingCells(Moves moves, House h, House index);
 };
 
 #endif
