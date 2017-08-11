@@ -12,6 +12,7 @@ void printHelp() {
   cout << "./gomoku -c (To play the computer)\n";
 }
 
+
 void playHuman() {
   Board board;
   int turn = 0, row, col;
@@ -37,6 +38,7 @@ void playHuman() {
   cout << "Player " << board.winner() << " won!\n";  
 }
 
+
 void playComputer(int depth) {
   cout << "Allow me to play first? (y or n): ";
   string res;
@@ -56,8 +58,7 @@ void playComputer(int depth) {
   
   while (board.winner() == -1) {
     if (computerTurn == turn) {
-      cout << search.negamax(depth, -1000000, 1000000, turn) << "\n";
-      auto move = search.hashTable[board.hash & 0xffffff].bestMove; 
+      auto move = search.calcBestMove(depth, turn); 
       board.place(move, turn);
       board.print();
       turn ^= 1;
@@ -79,13 +80,13 @@ void playComputer(int depth) {
   cout << "Player " << board.winner() << " won!\n";  
 }
 
+
 void playItself(int depth) {
   Board board;
   Search search(board);
   int turn = 0;
   while (board.winner() == -1 && !board.isFull()) {
-      cout << search.negamax(depth, -1000000, 1000000, turn) << "\n";
-      auto move = search.hashTable[board.hash & 0xffffff].bestMove; 
+    auto move = search.calcBestMove(depth, turn); 
       board.place(move, turn);
       board.print();
       turn ^= 1;
@@ -95,6 +96,7 @@ void playItself(int depth) {
   } else
     cout << "Game drawn!\n";
 }
+
   
 void test(int depth, int turn) {
   Board board;
@@ -109,7 +111,12 @@ void test(int depth, int turn) {
     board.print();
     cout << board.eval << " " << board.hash << "\n";
   }
+  board.place(9*19 + 9, 0);
+  board.print();
+  Search search(board);
+  search.calcBestMove(depth, turn);
 }
+
 
 int main(int argc, char* argv[]) {
   if (argc == 2) {
@@ -122,7 +129,7 @@ int main(int argc, char* argv[]) {
       playComputer(atoi(argv[2]));
     }
     else if (string(argv[1]) == "-t")
-      test(atoi(argv[2]), 0);
+      test(atoi(argv[2]), 1);
     else if (string(argv[1]) == "-i")
       playItself(atoi(argv[2]));
     else

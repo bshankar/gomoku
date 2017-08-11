@@ -115,6 +115,14 @@ bool Board::isFull() {
 }
 
 
+bool Board::isEmpty() {
+  for (int r = 0; r < 19; ++r)
+    if (houses[0][r])
+      return false;
+  return true;
+}
+
+
 void Board::updatePartials(Move move, bool player) {
   auto row = move/19;
   auto col = move % 19;

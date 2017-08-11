@@ -9,7 +9,8 @@ class Search {
 public:
   Search(Board& board);
   Eval negamax(int depth, Eval alpha, Eval beta, bool turn);
-    
+  Move calcBestMove(int depth, bool turn);
+  
   struct TTEntry {
     Key key;                  // 2 bytes
     Eval eval;                // 4 bytes        
@@ -33,8 +34,10 @@ public:
     int end = 0;
   };
 
-  void generateMoves(Moves moves, bool turn);
-  void putSurroundingCells(Moves moves, House h, House index);
+  void generateMoves(Moves& moves, bool turn);
+  void putSurroundingCells(Moves& moves, House h, House index);
+  bool moveExists(Moves& moves, Move move);
+  bool safeInsertMove(Moves& moves, Move move);
 };
 
 #endif

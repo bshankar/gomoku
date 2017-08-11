@@ -19,6 +19,7 @@ public:
   void print();
   int winner(); 
   bool isFull();
+  bool isEmpty();
   bool isWinning(House house);
 
   House houses[2][112] = {};
