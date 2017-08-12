@@ -26,10 +26,9 @@ public:
     };
     Flag flag = Flag::INVALID;
   };
-
+ 
   Board& board;
   std::vector<TTEntry> hashTable;
-
 
   void generateMoves(Moves& moves, bool turn);
   void putSurroundingCells(Moves& moves, House h, House index);
