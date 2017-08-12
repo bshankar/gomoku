@@ -1,10 +1,11 @@
 #include "board.hpp"
+#include "evaluate.hpp"
 #include <iostream>
 #include <random>
 #include <limits>
 
 Board::Board() {
-  // initialize rtable
+  // initialize rtable for zobrist hashing
   std::default_random_engine generator;
   std::uniform_int_distribution<uint64_t>
     distribution(std::numeric_limits<uint64_t>::min(),
@@ -17,6 +18,7 @@ Board::Board() {
 
 
 void Board::print() {
+  // print the board
   std::cout << " ";
   for (int i = 0; i < 19; ++i)
     std::cout << " " << i % 10;
@@ -37,53 +39,57 @@ void Board::print() {
 }
 
 
-bool Board::place(Move move, bool player) {
+bool Board::place(bool player, Move move) {
   auto row = move/19;
   auto col = move % 19;
   
   if (houses[0][row] & (1 << col) ||
       houses[1][row] & (1 << col))
+    // this cell is already occupied so exit 
     return false;
 
+  // fill the appropriate houses
   houses[player][row] |= (1 << col);
   houses[player][19 + col] |= (1 << row); 
   houses[player][38 + row - col + 18] |= (1 << row);
   houses[player][75 + row + col] |= (1 << row);
 
+  // check if player is winning
   if (isWinning(houses[player][row]) || isWinning(houses[player][19 + col]) ||
       isWinning(houses[player][38 + row - col + 18]) ||
       isWinning(houses[player][75 + row + col]))
     hasWon = player;
 
-  updateEval(move, player);
-  updateHash(move, player);
-
-  prevMoves.moveArray[prevMoves.end] = move;
-  ++prevMoves.end;
+  eval.updateEval(player, move);
+  updateHash(player, move);
+  movesMade.moveArray[movesMade.end] = move;
+  ++movesMade.end;
   return true;
 }
 
 
-bool Board::remove(Move move, bool player) {
+bool Board::remove(bool player, Move move) {
   auto row = move/19;
   auto col = move % 19;
   
   if (houses[player][row] & (1 << col)) {
+    // remove values from appropriate houses
     houses[player][row] ^= (1 << col);
     houses[player][19 + col] ^= (1 << row);
     houses[player][38 + row - col + 18] ^= (1 << row);
     houses[player][75 + row + col] ^= (1 << row);
 
-    if (hasWon == 1)
-      eval += 500000;
-    else if (!hasWon)
-      eval -= 500000;
+    // if previously won, update the eval
+    if (!hasWon)
+      eval.addToEval(-500000);
+    else
+      eval.addToEval(500000);
     
     // assume we don't search after somebody won
     hasWon = -1;
-    updateEval(move, player);
-    updateHash(move, player);
-    --prevMoves.end;
+    eval.updateEval(player, move);
+    updateHash(player, move);
+    --movesMade.end;
     return true;
   }
   return false;
@@ -127,54 +133,29 @@ bool Board::isEmpty() {
 }
 
 
-void Board::updatePartials(Move move, bool player) {
+void Board::updateHash(bool player, Move move) {
+  hash ^= rtable[player][move];
+}
+
+
+void Board::updatePartials(bool player, Move move) {
   auto row = move/19;
   auto col = move % 19;
   
   auto housesToChange = {row, 19 + col, 38 + row - col + 18, 75 + row + col};
   for (auto h: housesToChange) {
-    auto prev = partialEvals[h];
-    auto next = compareHouses(houses[0][h], houses[1][h]);
-    eval += next - prev;
-    partialEvals[h] = next;
+    auto prev = eval.getPartialEval(h);
+    auto next = eval.compareHouses(houses[0][h], houses[1][h]);
+    eval.addToEval(next - prev);
+    eval.setPartialEval(h, next);
   }
 }
 
 
-void Board::updateEval(Move move, bool player) {
+void Board::updateEval(bool player, Move move) {
   if (!hasWon)
-    eval += 500000;
+    eval.addToEval(500000);
   else if (hasWon == 1)
-    eval -= 500000;
+    eval.addToEval(-500000);
   updatePartials(move, player);
-}
-
-
-Eval Board::compareHouses(House h1, House h2) {
-  House bitmask = 0b11111;
-  double eval = 0;
-
-  double patternScores[] = {0, 1, 21, 337, 4045};
-  
-  while (h1 | h2) {
-    auto res = h1 & bitmask,
-      resOpp = h2 & bitmask;
-
-    if (res != 0 && resOpp == 0) {
-      eval += patternScores[__builtin_popcount(res)];
-    }
-    
-    else if (res == 0 && resOpp != 0) {
-      eval -= patternScores[__builtin_popcount(resOpp)];
-    }
-
-    h1 >>= 1;
-    h2 >>= 1;
-  }
-  return eval;
-}
-
-
-void Board::updateHash(Move move, int player) {
-  hash ^= rtable[player][move];
 }

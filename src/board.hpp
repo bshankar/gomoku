@@ -2,47 +2,42 @@
 #define BOARD_HPP
 
 #include <cstdint>
+#include "evaluate.hpp"
 
 typedef uint64_t Hash;
 typedef uint32_t House;
 typedef uint16_t Move;
 typedef uint16_t Key;
-typedef int32_t Eval;
 typedef int8_t HasWon;
 
 
 class Board {
 public:
   Board();
-  bool place(Move move, bool player);
-  bool remove(Move move, bool player);
-  void print();
-  int winner(); 
+  bool place(bool player, Move move);
+  bool remove(bool player, Move move);
+  bool isWinning(House house);
   bool isFull();
   bool isEmpty();
-  bool isWinning(House house);
-
-  House houses[2][112] = {};
-  HasWon hasWon = -1;
-
-  // evaluation related stuff
-  Eval eval = 0;
-  Eval partialEvals[112] = {};
-  Eval compareHouses(House h1, House h2);
-  void updatePartials(Move move, bool player);
-  void updateEval(Move move, bool player);
-
-  // zobrist hashing
-  Hash hash;
-  Hash rtable[2][361]; // random number table for hashing
-  void updateHash(Move move, int player);
-
+  int winner(); 
+  void print();
+  House getHouse(bool player, Move move);
+  
   struct Moves {
     Move moveArray[361];
     int end = 0;
   };
-  
-  Moves prevMoves;
+
+private:
+  Evaluate eval;
+  House houses[2][112] = {};
+  HasWon hasWon = -1;
+  Hash hash;
+  Hash rtable[2][361]; 
+  Moves movesMade;
+  void updateHash(bool player, Move move);
+  void updatePartials(bool player, Move move);
+  void updateEval(bool player, Move move);
 };
 
 #endif
