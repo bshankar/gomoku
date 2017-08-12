@@ -2,12 +2,15 @@
 #include "data.hpp"
 #include <algorithm>
 #include <iostream>
+
 using std::cout;
 using std::vector;
-typedef Search::TTEntry::Flag Flag;
+typedef TTable::TTEntry TTEntry;
+typedef TTable::TTEntry::Flag Flag;
+
 
 Search::Search(Board& board) : board(board) {
-  hashTable.resize(1 << 24);
+  
 }
 
 
@@ -34,14 +37,16 @@ void Search::putSurroundingCells(Moves& moves, House h, House index) {
   for (int i = index + 1; i < index + 5; ++i) {
     if (i > 18)
       break;
-    if (!((board.houses[0][h] & (1 << i)) || (board.houses[1][h] & (1 << i))))
+    if (!((board.getHouse(0, h) & (1 << i)) ||
+          (board.getHouse(1, h) & (1 << i))))
       safeInsertMove(moves, h*19 + i);
   }
 
   for (int i = index - 1; i > index - 5; --i) {
     if (i < 0)
       break;
-    if (!((board.houses[0][h] & (1 << i)) || (board.houses[1][h] & (1 << i))))
+    if (!((board.getHouse(0, h) & (1 << i)) ||
+          (board.getHouse(1, h) & (1 << i))))
       safeInsertMove(moves, h*19 + i);
   }
   
@@ -49,14 +54,16 @@ void Search::putSurroundingCells(Moves& moves, House h, House index) {
   for (int i = h + 1; i < h + 5; ++i) {
     if (i > 18)
       break;
-    if (!((board.houses[0][i] & (1 << index)) || (board.houses[1][i] & ( 1 << index))))
+    if (!((board.getHouse(0, i) & (1 << index)) ||
+          (board.getHouse(1, i) & ( 1 << index))))
       safeInsertMove(moves, i*19 + index);
   }
 
   for (int i = h - 1; i > h - 5; --i) {
     if (i < 0)
       break;
-    if (!((board.houses[0][i] & (1 << index)) || (board.houses[1][i] & (1 << index))))
+    if (!((board.getHouse(0, i) & (1 << index)) ||
+          (board.getHouse(1, i) & (1 << index))))
       safeInsertMove(moves, i*19 + index);
   }
   
@@ -64,16 +71,16 @@ void Search::putSurroundingCells(Moves& moves, House h, House index) {
   for (int i = 1; i < 5; ++i) {
     if (h + i > 18 || index + i > 18)
       break;
-    if (!((board.houses[0][h + i] & (1 << (index + i))) ||
-          (board.houses[1][h + i] & (1 << (index + i)))))
+    if (!((board.getHouse(0, h + i) & (1 << (index + i))) ||
+          (board.getHouse(1, h + i) & (1 << (index + i)))))
       safeInsertMove(moves, (h + i)*19 + (index + i));
   }
 
   for (int i = 1; i < 5; ++i) {
     if (i > h || i > index)
       break;
-    if (!((board.houses[0][h - i] & (1 << (index - i))) ||
-          (board.houses[1][h - i] & (1 << (index - i)))))
+    if (!((board.getHouse(0, h - i) & (1 << (index - i))) ||
+          (board.getHouse(1, h - i) & (1 << (index - i)))))
       safeInsertMove(moves, (h - i)*19 + (index - i));    
   }
   
@@ -82,8 +89,8 @@ void Search::putSurroundingCells(Moves& moves, House h, House index) {
     // h + i, index - i 
     if (i > index || h + i > 18)
       break;
-    if (!((board.houses[0][h + i] & (1 << (index - i))) ||
-          (board.houses[1][h + i] & (1 << (index - i)))))
+    if (!((board.getHouse(0, h + i) & (1 << (index - i))) ||
+          (board.getHouse(1, h + i) & (1 << (index - i)))))
       safeInsertMove(moves, (h + i)*19 + (index - i));
   }
 
@@ -91,29 +98,17 @@ void Search::putSurroundingCells(Moves& moves, House h, House index) {
     // h - i, index + i
     if (i > h || index + i > 18)
       break;
-    if (!((board.houses[0][h - i] & (1 << (index + i))) ||
-          (board.houses[1][h - i] & (1 << (index + i)))))
+    if (!((board.getHouse(0, h - i) & (1 << (index + i))) ||
+          (board.getHouse(1, h - i) & (1 << (index + i)))))
       safeInsertMove(moves, (h - i)*19 + (index + i));
   }
 }
 
 
 void Search::generateMoves(Moves& moves, bool turn) {
-
-  // if (board.prevMoves.end >= 2) {
-    // auto cell1 = board.prevMoves.moveArray[board.prevMoves.end - 1],
-      // cell2 = board.prevMoves.moveArray[board.prevMoves.end - 2];
-
-    // putSurroundingCells(moves, cell1/19, cell1 % 19);
-    // putSurroundingCells(moves, cell2/19, cell1 % 19);
-    
-    // if (moves.end)
-      // return;
-  // }
-  
   for (int p = 0; p < 2; ++p) 
     for (int h = 0; h < 19; ++h) { 
-      auto house = board.houses[p][h];
+      auto house = board.getHouse(p, h);
 
       House index = 0;
       while (house) {
@@ -130,8 +125,8 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   auto alphaOrig = alpha;
 
   // Transposition Table Lookup; node is the lookup key for TTEntry
-  TTEntry entry = hashTable[board.hash & 0xffffff];
-  if (entry.flag != Flag::INVALID && entry.key == (board.hash >> 48) &&
+  TTEntry entry = ttable.probe(board.getHash());
+  if (entry.flag != Flag::INVALID && entry.key == (board.getHash() >> 48) &&
       entry.depth >= depth) {
     if (entry.flag == Flag::EXACT)
       return entry.eval;
@@ -144,7 +139,8 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   }
   
   if (!depth || board.winner() != -1)
-    return turn ? -board.eval : board.eval;
+    return turn ? -board.getEvaluate().getEval()
+      : board.getEvaluate().getEval();
 
   Eval bestValue = -1000000;
   Move bestMove = -1;
@@ -153,9 +149,9 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   generateMoves(moves, turn);
 
   for (int i = 0; i < moves.end; ++i) {
-    board.place(moves.moveArray[i], turn);
+    board.place(turn, moves.moveArray[i]);
     Eval v = -negamax(depth - 1, -beta, -alpha, turn ^ 1);
-    board.remove(moves.moveArray[i], turn);
+    board.remove(turn, moves.moveArray[i]);
 
     if (v > bestValue) {
       bestValue = v;
@@ -177,8 +173,8 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
 
   entry.depth = depth;
   entry.bestMove = bestMove;
-  entry.key = board.hash >> 48;
-  hashTable[board.hash & 0xffffff] = entry;
+  entry.key = board.getHash() >> 48;
+  ttable.store(entry, board.getHash());
   return bestValue;
 }
 
@@ -187,5 +183,5 @@ Move Search::calcBestMove(int depth, bool turn) {
   if (board.isEmpty())
     return 19*9 + 9;
   negamax(depth, -1000000, 1000000, turn);
-  return hashTable[board.hash & 0xffffff].bestMove; 
+  return ttable.probe(board.getHash()).bestMove; 
 }

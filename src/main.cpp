@@ -26,10 +26,8 @@ void playHuman() {
 
     if (row >= 0 && row < 19 &&
         col >= 0 && col < 19 &&
-        board.place(row*19 + col, turn)) {
-      cout << board.eval << "\n";
+        board.place(turn, row*19 + col))
       turn ^= 1;
-    }
     else 
       cout << "Invalid cell. Try again.\n";
   }
@@ -59,7 +57,7 @@ void playComputer(int depth) {
   while (board.winner() == -1) {
     if (computerTurn == turn) {
       auto move = search.calcBestMove(depth, turn); 
-      board.place(move, turn);
+      board.place(turn, move);
       board.print();
       turn ^= 1;
     } else {
@@ -70,7 +68,7 @@ void playComputer(int depth) {
                                 
       if (row >= 0 && row < 19 &&  // 
           col >= 0 && col < 19 &&
-          board.place(row*19 + col, turn)) 
+          board.place(turn, row*19 + col)) 
         turn ^= 1;
       else 
         cout << "Invalid cell. Try again.\n";
@@ -87,9 +85,9 @@ void playItself(int depth) {
   int turn = 0;
   while (board.winner() == -1 && !board.isFull()) {
     auto move = search.calcBestMove(depth, turn); 
-      board.place(move, turn);
-      board.print();
-      turn ^= 1;
+    board.place(turn, move);
+    board.print();
+    turn ^= 1;
   }
   if (board.winner() != -1) {
     cout << "Player " << board.winner() << " won\n";
@@ -101,15 +99,15 @@ void playItself(int depth) {
 void test(int depth, int turn) {
   Board board;
   for (int i = 9; i >= 5; --i) {
-    board.place(i*19 + i, 1);
+    board.place(1, i*19 + i);
     board.print();
-    cout << board.eval << " " << board.hash << "\n";
+    cout << board.getEvaluate().getEval() << " " << board.getHash() << "\n";
   }
-
+                                
   for (int i = 5; i < 10; ++i) {
-    board.remove(i*19 + i, 1);
+    board.remove(1, i*19 + i);
     board.print();
-    cout << board.eval << " " << board.hash << "\n";
+    cout << board.getEvaluate().getEval() << " " << board.getHash() << "\n";
   }
   board.place(9*19 + 9, 0);
   board.print();

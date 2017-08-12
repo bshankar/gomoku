@@ -1,9 +1,11 @@
 #ifndef EVALUATE_H
 #define EVALUATE_H
 
-#include "board.hpp"
-
+#include <cinttypes>
+typedef uint16_t Move;
 typedef int32_t Eval;
+typedef uint32_t House;
+
 
 class Evaluate {
 public:

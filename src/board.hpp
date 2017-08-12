@@ -22,6 +22,8 @@ public:
   int winner(); 
   void print();
   House getHouse(bool player, Move move);
+  Hash getHash();
+  Evaluate& getEvaluate();
   
   struct Moves {
     Move moveArray[361];

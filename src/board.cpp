@@ -60,7 +60,7 @@ bool Board::place(bool player, Move move) {
       isWinning(houses[player][75 + row + col]))
     hasWon = player;
 
-  eval.updateEval(player, move);
+  updateEval(player, move);
   updateHash(player, move);
   movesMade.moveArray[movesMade.end] = move;
   ++movesMade.end;
@@ -82,12 +82,12 @@ bool Board::remove(bool player, Move move) {
     // if previously won, update the eval
     if (!hasWon)
       eval.addToEval(-500000);
-    else
+    else if (hasWon == 1)
       eval.addToEval(500000);
     
     // assume we don't search after somebody won
     hasWon = -1;
-    eval.updateEval(player, move);
+    updateEval(player, move);
     updateHash(player, move);
     --movesMade.end;
     return true;
@@ -157,5 +157,20 @@ void Board::updateEval(bool player, Move move) {
     eval.addToEval(500000);
   else if (hasWon == 1)
     eval.addToEval(-500000);
-  updatePartials(move, player);
+  updatePartials(player, move);
+}
+
+
+House Board::getHouse(bool player, Move move) {
+  return houses[player][move];
+}
+
+
+Hash Board::getHash() {
+  return hash;
+}
+
+
+Evaluate& Board::getEvaluate() {
+  return eval;
 }
