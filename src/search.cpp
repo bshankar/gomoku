@@ -1,5 +1,4 @@
 #include "search.hpp"
-#include "data.hpp"
 #include <algorithm>
 #include <iostream>
 
