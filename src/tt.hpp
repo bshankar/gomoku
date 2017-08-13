@@ -27,7 +27,7 @@ public:
   
   TTEntry probe(Hash hash);
   void store(TTEntry entry, Hash hash);
-
+  
 private: 
   std::vector<TTEntry> hashTable;
 };

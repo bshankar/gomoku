@@ -176,7 +176,7 @@ Evaluate& Board::getEvaluate() {
 }
 
 
-Board::Moves Board::getMovesMade() {
+Board::Moves& Board::getMovesMade() {
   return movesMade;
 }
 

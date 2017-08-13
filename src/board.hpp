@@ -31,7 +31,8 @@ public:
     int end = 0;
   };
 
-  Moves getMovesMade();
+  Moves& getMovesMade();
+  void updateHash(bool player, Move move);
 
 private:
   Evaluate eval;
@@ -40,7 +41,6 @@ private:
   Hash hash;
   Hash rtable[2][361]; 
   Moves movesMade;
-  void updateHash(bool player, Move move);
   void updatePartials(bool player, Move move);
   void updateEval(bool player, Move move);
 };

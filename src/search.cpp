@@ -77,9 +77,8 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   Eval bestValue = -1000000;
   Move bestMove = -1;
   Moves moves;
-  
   generateMoves(moves, turn);
-
+  
   for (int i = 0; i < moves.end; ++i) {
     board.place(turn, moves.moveArray[i]);
     Eval v = -negamax(depth - 1, -beta, -alpha, turn ^ 1);
@@ -114,6 +113,8 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
 Move Search::calcBestMove(int depth, bool turn) {
   if (board.isEmpty())
     return 19*9 + 9;
-  negamax(depth, -1000000, 1000000, turn);
+
+  for (int d = 1; d <= depth; ++d) 
+    negamax(d, -1000000, 1000000, turn);
   return ttable.probe(board.getHash()).bestMove; 
 }

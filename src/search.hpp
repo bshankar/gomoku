@@ -19,6 +19,7 @@ private:
   Board& board;
   TTable ttable;
   void generateMoves(Moves& moves, bool turn);
+  void orderMoves(Moves& moves, bool turn);
   void putSurroundingCells(Moves& moves, House h, House index);
   bool moveExists(Moves& moves, Move move);
   bool safeInsertMove(Moves& moves, Move move);

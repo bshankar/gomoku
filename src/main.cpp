@@ -109,7 +109,7 @@ void test(int depth, int turn) {
     board.print();
     cout << board.getEvaluate().getEval() << " " << board.getHash() << "\n";
   }
-  board.place(9*19 + 9, 0);
+  board.place(0, 19*9 + 9);
   board.print();
   Search search(board);
   search.calcBestMove(depth, turn);
