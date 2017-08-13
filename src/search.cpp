@@ -32,91 +32,24 @@ bool Search::safeInsertMove(Moves& moves, Move move) {
 
 
 void Search::putSurroundingCells(Moves& moves, House h, House index) {
-  // rows
-  for (int i = index + 1; i < index + 5; ++i) {
-    if (i > 18)
-      break;
-    if (!((board.getHouse(0, h) & (1 << i)) ||
-          (board.getHouse(1, h) & (1 << i))))
-      safeInsertMove(moves, h*19 + i);
-  }
+  House cellsToCheck[8][2] = {{h + 1, index}, {h - 1, index}, {h, index + 1}, {h, index - 1},
+                              {h + 1, index + 1}, {h - 1, index - 1},
+                              {h + 1, index - 1}, {h - 1, index + 1}};
 
-  for (int i = index - 1; i > index - 5; --i) {
-    if (i < 0)
-      break;
-    if (!((board.getHouse(0, h) & (1 << i)) ||
-          (board.getHouse(1, h) & (1 << i))))
-      safeInsertMove(moves, h*19 + i);
-  }
-  
-  // cols
-  for (int i = h + 1; i < h + 5; ++i) {
-    if (i > 18)
-      break;
-    if (!((board.getHouse(0, i) & (1 << index)) ||
-          (board.getHouse(1, i) & ( 1 << index))))
-      safeInsertMove(moves, i*19 + index);
-  }
-
-  for (int i = h - 1; i > h - 5; --i) {
-    if (i < 0)
-      break;
-    if (!((board.getHouse(0, i) & (1 << index)) ||
-          (board.getHouse(1, i) & (1 << index))))
-      safeInsertMove(moves, i*19 + index);
-  }
-  
-  // diag
-  for (int i = 1; i < 5; ++i) {
-    if (h + i > 18 || index + i > 18)
-      break;
-    if (!((board.getHouse(0, h + i) & (1 << (index + i))) ||
-          (board.getHouse(1, h + i) & (1 << (index + i)))))
-      safeInsertMove(moves, (h + i)*19 + (index + i));
-  }
-
-  for (int i = 1; i < 5; ++i) {
-    if (i > h || i > index)
-      break;
-    if (!((board.getHouse(0, h - i) & (1 << (index - i))) ||
-          (board.getHouse(1, h - i) & (1 << (index - i)))))
-      safeInsertMove(moves, (h - i)*19 + (index - i));    
-  }
-  
-  // antidiag
-  for (int i = 1; i < 5; ++i) {
-    // h + i, index - i 
-    if (i > index || h + i > 18)
-      break;
-    if (!((board.getHouse(0, h + i) & (1 << (index - i))) ||
-          (board.getHouse(1, h + i) & (1 << (index - i)))))
-      safeInsertMove(moves, (h + i)*19 + (index - i));
-  }
-
-  for (int i = 1; i < 5; ++i) {
-    // h - i, index + i
-    if (i > h || index + i > 18)
-      break;
-    if (!((board.getHouse(0, h - i) & (1 << (index + i))) ||
-          (board.getHouse(1, h - i) & (1 << (index + i)))))
-      safeInsertMove(moves, (h - i)*19 + (index + i));
+  for (int i = 0; i < 8; ++i) {
+    auto hi = cellsToCheck[i][0];
+    auto ii = cellsToCheck[i][1];
+    if (hi < 19 && ii < 19 && !board.isFilledAt(hi, ii))
+      safeInsertMove(moves, hi*19 + ii);
   }
 }
 
 
 void Search::generateMoves(Moves& moves, bool turn) {
-  for (int p = 0; p < 2; ++p) 
-    for (int h = 0; h < 19; ++h) { 
-      auto house = board.getHouse(p, h);
-
-      House index = 0;
-      while (house) {
-        if (house & 1)
-          putSurroundingCells(moves, h, index);
-        house >>= 1;
-        ++index;
-      }
-    }
+  for (int i = 0; i < board.getMovesMade().end; ++i) {
+    auto move = board.getMovesMade().moveArray[i];
+    putSurroundingCells(moves, move/19, move % 19);
+  }
 }
 
 

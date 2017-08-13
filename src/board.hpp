@@ -19,6 +19,7 @@ public:
   bool isWinning(House house);
   bool isFull();
   bool isEmpty();
+  bool isFilledAt(Move h, Move i);
   int winner(); 
   void print();
   House getHouse(bool player, Move move);
@@ -29,6 +30,8 @@ public:
     Move moveArray[361];
     int end = 0;
   };
+
+  Moves getMovesMade();
 
 private:
   Evaluate eval;

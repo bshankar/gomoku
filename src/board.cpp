@@ -174,3 +174,15 @@ Hash Board::getHash() {
 Evaluate& Board::getEvaluate() {
   return eval;
 }
+
+
+Board::Moves Board::getMovesMade() {
+  return movesMade;
+}
+
+
+bool Board::isFilledAt(Move h, Move i) {
+  if (houses[0][h] & (1 << i) || houses[1][h] & (1 << i))
+    return true;
+  return false;
+}
