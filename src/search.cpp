@@ -46,6 +46,13 @@ void Search::putSurroundingCells(Moves& moves, House h, House index) {
 
 
 void Search::generateMoves(Moves& moves, bool turn) {
+  auto entry = ttable.probe(board.getHash());
+  if (entry.flag != Flag::INVALID && entry.key == (board.getHash() >> 48)) {
+    auto move = entry.bestMove;
+    if (!board.isFilledAt(move/19, move % 19))
+      safeInsertMove(moves, move);
+  }
+  
   for (int i = 0; i < board.getMovesMade().end; ++i) {
     auto move = board.getMovesMade().moveArray[i];
     putSurroundingCells(moves, move/19, move % 19);
