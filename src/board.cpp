@@ -85,7 +85,6 @@ bool Board::remove(bool player, Move move) {
     else if (hasWon == 1)
       eval.addToEval(500000);
     
-    // assume we don't search after somebody won
     hasWon = -1;
     updateEval(player, move);
     updateHash(player, move);
