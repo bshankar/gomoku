@@ -13,7 +13,7 @@ typedef House NodeCount;
 
 class Search {
 public:
-  Search();
+  Search(Board& board);
   emscripten::val calcBestMove(int depth, bool turn);
   emscripten::val getBestMoveInfo(Move bestMove, Eval eval, NodeCount nodes);
 private:

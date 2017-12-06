@@ -7,8 +7,7 @@ using std::vector;
 typedef TTable::TTEntry TTEntry;
 typedef TTable::TTEntry::Flag Flag;
 
-
-Search::Search() : board(*(new Board)) {}
+Search::Search(Board& board) : board(board) {}
 
 
 bool Search::moveExists(Moves& moves, Move move) {
@@ -141,6 +140,6 @@ emscripten::val Search::calcBestMove(int depth, bool turn) {
 
 EMSCRIPTEN_BINDINGS(gomoku) {
   emscripten::class_<Search>("Search")
-      .constructor<>()
+    .constructor<Board&>()
     .function("calcBestMove", &Search::calcBestMove);
 };
