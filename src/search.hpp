@@ -5,7 +5,6 @@
 #include "board.hpp"
 #include "evaluate.hpp"
 #include "tt.hpp"
-#include <emscripten/bind.h>
 
 typedef uint8_t Depth;
 typedef Board::Moves Moves;

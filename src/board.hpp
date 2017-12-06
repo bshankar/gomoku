@@ -2,6 +2,7 @@
 #define BOARD_HPP
 
 #include <cstdint>
+#include <emscripten/bind.h>
 #include "evaluate.hpp"
 
 typedef uint64_t Hash;

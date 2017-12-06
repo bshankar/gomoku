@@ -138,7 +138,7 @@ emscripten::val Search::calcBestMove(int depth, bool turn) {
                          nodesVisited);
 }
 
-EMSCRIPTEN_BINDINGS(gomoku) {
+EMSCRIPTEN_BINDINGS(gomokuSearch) {
   emscripten::class_<Search>("Search")
     .constructor<Board&>()
     .function("calcBestMove", &Search::calcBestMove);
