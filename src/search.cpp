@@ -1,16 +1,14 @@
 #include "search.hpp"
 #include <algorithm>
 #include <iostream>
-
+ 
 using std::cout;
 using std::vector;
 typedef TTable::TTEntry TTEntry;
 typedef TTable::TTEntry::Flag Flag;
 
 
-Search::Search(Board& board) : board(board) {
-  
-}
+Search::Search() : board(*(new Board)) {}
 
 
 bool Search::moveExists(Moves& moves, Move move) {
@@ -62,6 +60,7 @@ void Search::generateMoves(Moves& moves, bool turn) {
 
 Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
   auto alphaOrig = alpha;
+  ++nodesVisited;
 
   // Transposition Table Lookup; node is the lookup key for TTEntry
   TTEntry entry = ttable.probe(board.getHash());
@@ -117,11 +116,31 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
 }
 
 
-Move Search::calcBestMove(int depth, bool turn) {
-  if (board.isEmpty())
-    return 19*9 + 9;
+emscripten::val Search::getBestMoveInfo(Move bestMove, Eval eval, NodeCount nodes) {
+  // In javascript accessible format
+  emscripten::val bestMoveInfo = emscripten::val::object();
+  bestMoveInfo.set("bestMove", emscripten::val(19*9 + 9));
+  bestMoveInfo.set("eval", emscripten::val(0));
+  bestMoveInfo.set("nodes", emscripten::val(0));
+  return bestMoveInfo;
+}
 
+
+emscripten::val Search::calcBestMove(int depth, bool turn) {
+  if (board.isEmpty())
+    return getBestMoveInfo(19*9 + 9, 0, 0);
+
+  nodesVisited = 0;
   for (int d = 1; d <= depth; ++d) 
     negamax(d, -1000000, 1000000, turn);
-  return ttable.probe(board.getHash()).bestMove; 
+
+  return getBestMoveInfo(ttable.probe(board.getHash()).bestMove,
+                         ttable.probe(board.getHash()).eval,
+                         nodesVisited);
 }
+
+EMSCRIPTEN_BINDINGS(gomoku) {
+  emscripten::class_<Search>("Search")
+      .constructor<>()
+    .function("calcBestMove", &Search::calcBestMove);
+};
