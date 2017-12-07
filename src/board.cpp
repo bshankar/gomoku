@@ -185,11 +185,3 @@ bool Board::isFilledAt(Move h, Move i) {
     return true;
   return false;
 }
-
-EMSCRIPTEN_BINDINGS(gomokuBoard) {
-  emscripten::class_<Board>("Board")
-    .constructor<>()
-    .function("place", &Board::place)
-    .function("winner", &Board::winner)
-    .function("print", &Board::print);
-};

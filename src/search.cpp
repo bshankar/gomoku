@@ -8,7 +8,19 @@ typedef TTable::TTEntry TTEntry;
 typedef TTable::TTEntry::Flag Flag;
 
 Search::Search(Board& board) : board(board) {}
+Search::Search() : board(*new Board) {}
 
+bool Search::place(bool player, Move move) {
+  board.place(player, move);
+}
+
+int Search::winner() {
+  return board.winner();
+}
+
+void Search::print() {
+  return board.print();
+}
 
 bool Search::moveExists(Moves& moves, Move move) {
   for (int i = 0; i < moves.end; ++i)
@@ -140,6 +152,9 @@ emscripten::val Search::calcBestMove(int depth, bool turn) {
 
 EMSCRIPTEN_BINDINGS(gomokuSearch) {
   emscripten::class_<Search>("Search")
-    .constructor<Board&>()
-    .function("calcBestMove", &Search::calcBestMove);
+    .constructor<>()
+    .function("calcBestMove", &Search::calcBestMove)
+    .function("place", &Search::place)
+    .function("winner", &Search::winner)
+    .function("print", &Search::print);
 };
