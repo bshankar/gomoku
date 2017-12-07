@@ -130,9 +130,9 @@ Eval Search::negamax(int depth, Eval alpha, Eval beta, bool turn) {
 emscripten::val Search::getBestMoveInfo(Move bestMove, Eval eval, NodeCount nodes) {
   // In javascript accessible format
   emscripten::val bestMoveInfo = emscripten::val::object();
-  bestMoveInfo.set("bestMove", emscripten::val(19*9 + 9));
-  bestMoveInfo.set("eval", emscripten::val(0));
-  bestMoveInfo.set("nodes", emscripten::val(0));
+  bestMoveInfo.set("bestMove", bestMove);
+  bestMoveInfo.set("eval", eval);
+  bestMoveInfo.set("nodes", nodes);
   return bestMoveInfo;
 }
 
